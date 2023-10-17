@@ -1,0 +1,5 @@
+system:
+  debug: true
+  port: 8080
+misskey:
+  instance: "https://nya.one"
