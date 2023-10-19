@@ -34,7 +34,9 @@ func Wrap(ctx *gin.Context) {
 	if err != nil {
 		global.Logger.Debugf("Failed to parse request body with error: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": gin.H{
+				"message": err.Error(),
+			},
 		})
 		return
 	}
@@ -42,25 +44,32 @@ func Wrap(ctx *gin.Context) {
 	// Check Authorization header
 	auth := ctx.GetHeader("Authorization")
 	if auth != "" {
+		global.Logger.Debugf("Authorization header found")
 		// Add authorization API key
 		authKey := strings.Split(auth, " ")
 		if len(authKey) == 1 {
 			// Set as auth key
+			global.Logger.Debugf("Set Authorization header as raw key")
 			body["i"] = auth
 		} else if len(authKey) > 2 {
-			global.Logger.Debugf("Invalid request header")
+			global.Logger.Debugf("Invalid Authorization header")
 			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid Authorization header",
+				"error": gin.H{
+					"message": "invalid Authorization header",
+				},
 			})
 			return
 		} else {
 			switch authKey[0] {
 			case "Bearer":
+				global.Logger.Debugf("Set Authorization header as Bearer key")
 				body["i"] = authKey[1]
 			default:
 				global.Logger.Debugf("Unsupported Authorization scheme")
 				ctx.JSON(http.StatusUnauthorized, gin.H{
-					"error": "unsupported Authorization scheme",
+					"error": gin.H{
+						"message": "unsupported Authorization scheme",
+					},
 				})
 				return
 			}
@@ -72,7 +81,9 @@ func Wrap(ctx *gin.Context) {
 	if err != nil {
 		global.Logger.Debugf("API failure: %v", err)
 		ctx.JSON(code, gin.H{
-			"error": err.Error(),
+			"error": gin.H{
+				"message": err.Error(),
+			},
 		})
 		return
 	}

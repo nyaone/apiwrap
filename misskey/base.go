@@ -9,14 +9,14 @@ import (
 	"net/http"
 )
 
-type Error_Response struct {
-	Error struct {
-		Message string `json:"message"`
-		Code    string `json:"code"`
-		ID      string `json:"id"`
-		Kind    string `json:"kind"`
-	} `json:"error"`
-}
+//type Error_Response struct {
+//	Error struct {
+//		Message string `json:"message"`
+//		Code    string `json:"code"`
+//		ID      string `json:"id"`
+//		Kind    string `json:"kind"`
+//	} `json:"error"`
+//}
 
 func PostAPIRequest(
 	apiEndpointPath string, reqBody any,
@@ -29,6 +29,8 @@ func PostAPIRequest(
 		global.Logger.Errorf("Failed to marshall request body with error: %v", err)
 		return nil, http.StatusBadRequest, err
 	}
+
+	global.Logger.Debugf("Request URL: %s , body: %s", apiEndpoint, reqBodyBytes)
 
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewReader(reqBodyBytes))
 	if err != nil {
@@ -46,28 +48,13 @@ func PostAPIRequest(
 	}
 
 	// Parse response
-	if res.StatusCode == http.StatusNotFound {
-		return nil, res.StatusCode, fmt.Errorf("no such api endpoint")
-	} else if res.StatusCode == http.StatusOK {
-		var resBody any
-		err = json.NewDecoder(res.Body).Decode(&resBody)
-		if err != nil {
-			global.Logger.Errorf("Failed to decode response body with error: %v", err)
-			return nil, res.StatusCode, err
-		}
-
-		return &resBody, res.StatusCode, nil
-	} else {
-		global.Logger.Errorf("Request failed with code: %d.", res.StatusCode)
-		var errBody Error_Response
-		err = json.NewDecoder(res.Body).Decode(&errBody)
-		if err != nil {
-			global.Logger.Errorf("Failed to decode error body with error: %v", err)
-			return nil, res.StatusCode, err
-		}
-
-		global.Logger.Errorf("Failed details: %v", errBody)
-		return nil, res.StatusCode, fmt.Errorf(errBody.Error.Message)
+	var resBody any
+	err = json.NewDecoder(res.Body).Decode(&resBody)
+	if err != nil {
+		global.Logger.Errorf("Failed to decode response body with error: %v", err)
+		return nil, res.StatusCode, err
 	}
+
+	return &resBody, res.StatusCode, nil
 
 }
