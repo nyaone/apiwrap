@@ -1,10 +1,8 @@
-version: "3.7"
-
 services:
 
   app:
-    #image: ncr.pub/nyaone/apiwrap:latest
-    build: .
+    image: ghcr.io/nyaone/apiwrap:latest
+    #build: .
     restart: always
     ports:
       - "127.0.0.1:8080:8080"
